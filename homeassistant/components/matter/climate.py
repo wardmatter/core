@@ -269,10 +269,15 @@ class MatterClimate(MatterEntity, ClimateEntity, RestoreEntity):
         """Turn on using the last supported running mode."""
         if self.hvac_mode != HVACMode.OFF:
             return
+        has_dedicated_power = (
+            self.get_matter_attribute_value(clusters.OnOff.Attributes.OnOff) is False
+        )
         if self._last_hvac_mode is not None and self._last_hvac_mode in self.hvac_modes:
             await self.async_set_hvac_mode(self._last_hvac_mode)
-            return
-        await super().async_turn_on()
+        else:
+            await super().async_turn_on()
+        if has_dedicated_power:
+            await self.send_device_command(clusters.OnOff.Commands.On())
 
     @override
     async def async_set_temperature(self, **kwargs: Any) -> None:
