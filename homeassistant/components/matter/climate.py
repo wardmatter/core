@@ -364,6 +364,9 @@ class MatterClimate(MatterEntity, ClimateEntity, RestoreEntity):
             value=system_mode_value,
             matter_attribute=clusters.Thermostat.Attributes.SystemMode,
         )
+        # Dedicated power can keep the reported HVAC mode off after a mode write.
+        if hvac_mode != HVACMode.OFF:
+            self._last_hvac_mode = hvac_mode
         # we need to optimistically update the attribute's value here
         # to prevent a race condition when adjusting the mode and temperature
         # in the same call
